@@ -144,6 +144,13 @@
             clockInButton.disabled = true;
             clockOutButton.disabled = true;
 
+            // 位置情報取得オプション
+            const geoOptions = {
+                enableHighAccuracy: true, // 高精度な位置情報
+                timeout: 10000,           // 10秒でタイムアウト
+                maximumAge: 0             // キャッシュされた位置情報は使用しない
+            };
+
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     const lat = position.coords.latitude;
@@ -207,11 +214,7 @@
                     clockInButton.disabled = false;
                     clockOutButton.disabled = false;
                 },
-                {
-                    enableHighAccuracy: true, // 高精度な位置情報
-                    timeout: 10000,           // 10秒でタイムアウト
-                    maximumAge: 0             // キャッシュされた位置情報は使用しない
-                }
+                geoOptions
             );
         }
 
