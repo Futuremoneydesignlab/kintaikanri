@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LIFF 勤怠打刻アプリ</title>
-    <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+    <script 
+        src="https://static.line-scdn.net/liff/edge/2/sdk.js"
+        onload="console.log('LIFF SDK: loaded successfully (edge/2)');"
+        onerror="console.error('LIFF SDK: failed to load (edge/2)');"
+    ></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -166,14 +170,11 @@
         function openInExternalBrowser() {
             const currentUrl = window.location.href;
             if (typeof liff !== 'undefined' && liff.isInClient()) {
-                // LIFFクライアント内でliff.openWindowが使える場合
                 liff.openWindow({
                     url: currentUrl,
-                    external: true // 外部ブラウザで開く
+                    external: true 
                 });
             } else {
-                // LIFFクライアント外からのアクセス、またはliffが利用できない場合
-                // liff.line.me経由で強制的にLIFFブラウザ（または外部ブラウザ）で開く
                 window.open(`https://liff.line.me/${LIFF_ID}?redirectUri=${encodeURIComponent(currentUrl)}`, '_blank');
             }
         }
