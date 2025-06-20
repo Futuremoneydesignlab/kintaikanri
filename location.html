@@ -1,284 +1,109 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFF 勤怠打刻アプリ</title>
-    <script 
-        src="https://static.line-scdn.net/liff/edge/2/sdk.js"
-        onload="console.log('LIFF SDK: loaded successfully (edge/2)');"
-        onerror="console.error('LIFF SDK: failed to load (edge/2)');"
-    ></script>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f0f2f5;
-            color: #333;
-            text-align: center;
-        }
-        .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 90%;
-        }
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 25px;
-            font-size: 1.8em;
-        }
-        p#status {
-            font-size: 1em;
-            color: #555;
-            min-height: 20px; /* レイアウト崩れ防止 */
-        }
-        .button-group {
-            margin-top: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        button {
-            background-color: #00b900; /* LINE Green */
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.1s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            width: 100%;
-        }
-        button:hover {
-            background-color: #00a000;
-            transform: translateY(-2px);
-        }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
-        #location-data {
-            margin-top: 25px;
-            font-size: 0.9em;
-            color: #666;
-            text-align: left;
-            word-break: break-all;
-            background-color: #f8f8f8;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #eee;
-        }
-        .fallback-message {
-            background-color: #fff9db;
-            border-left: 4px solid #ffd43b;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-            text-align: left;
-        }
-        .fallback-button {
-            background-color: #339af0;
-            margin-top: 10px;
-        }
-        .retry-button {
-            background-color: #ff6b6b;
-            margin-top: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>勤怠打刻</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>勤怠打刻アプリ</h1>
-        <p id="status">LIFFの初期化中...</p>
-        <div class="button-group">
-            <button id="clockInButton" disabled>出勤する</button>
-            <button id="clockOutButton" disabled>退勤する</button>
-        </div>
-        <div id="location-data">
-            <p><strong>打刻ログ:</strong></p>
-            <p id="last-punch-info">最新の打刻はありません。</p>
-        </div>
-        <div id="fallback-message" class="fallback-message" style="display: none;">
-            <p>LIFF機能の読み込みに失敗しました。以下の方法をお試しください:</p>
-            <button id="openInBrowser" class="fallback-button">外部ブラウザで開く</button>
-            <button id="retryButton" class="retry-button">再読み込み</button>
-        </div>
-    </div>
+  <h2>出勤・退勤打刻</h2>
+  <p id="userName">ログイン確認中...</p>
+  <button onclick="clockIn()">出勤</button>
+  <button onclick="clockOut()">退勤</button>
+  <p id="status"></p>
 
-    <script>
-        const LIFF_ID = "2007570655-EXXROdzZ"; 
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx2UCfAl6AAhnXyKtdX6ubsC0HU1rUdXIkvJvcmvO9_ZbTUyE83Bg13h13Y7y1pKHHsSQ/exec"; 
+  <script>
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbxeJwOX7dBDBxBD2qOkNd9XktldBhB1kkfddh31E1T3G_z_gV67TpO4nCI4PFl3VB2bYA/exec';
 
-        const statusDisplay = document.getElementById('status');
-        const clockInButton = document.getElementById('clockInButton');
-        const clockOutButton = document.getElementById('clockOutButton');
-        const lastPunchInfo = document.getElementById('last-punch-info');
-        const fallbackMessage = document.getElementById('fallback-message');
-        const openInBrowserButton = document.getElementById('openInBrowser');
-        const retryButton = document.getElementById('retryButton');
+    let userId = null;
 
-        let userProfile = null;
-
-        /**
-         * LIFF初期化とユーザー情報の取得
-         */
-        async function initializeLiff() {
-            try {
-                // liffオブジェクトが定義されているか最終チェック
-                if (typeof liff === 'undefined') {
-                    console.error("LIFF SDK: liff object is undefined. SDK did not load correctly.");
-                    statusDisplay.textContent = "LIFF SDKの読み込みに失敗しました。ネットワーク接続を確認してください。";
-                    fallbackMessage.style.display = 'block'; // エラー表示
-                    return;
-                }
-
-                await liff.init({ liffId: LIFF_ID });
-                statusDisplay.textContent = 'LIFF初期化完了！';
-                fallbackMessage.style.display = 'none'; // 成功したらエラーメッセージを非表示
-
-                if (!liff.isLoggedIn()) {
-                    statusDisplay.textContent = 'LINEにログインしていません。ログインが必要です。';
-                    liff.login(); 
-                } else {
-                    userProfile = await liff.getProfile();
-                    statusDisplay.textContent = `こんにちは、${userProfile.displayName}さん！`;
-                    clockInButton.disabled = false;
-                    clockOutButton.disabled = false;
-                }
-            } catch (err) {
-                console.error("LIFF初期化エラー:", err);
-                statusDisplay.textContent = `LIFF初期化に失敗しました: ${err.message || '不明なエラー'}`;
-                fallbackMessage.style.display = 'block'; // エラー表示
-                alert("LIFF初期化エラー:\n" + (err.message || '不明なエラーが発生しました。'));
-            }
+    // LIFF初期化とログイン処理
+    window.onload = async () => {
+      try {
+        await liff.init({ liffId: '2007570655-EXXROdzZ' });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
         }
 
-        /**
-         * 外部ブラウザで開く
-         */
-        function openInExternalBrowser() {
-            const currentUrl = window.location.href;
-            if (typeof liff !== 'undefined' && liff.isInClient()) {
-                liff.openWindow({
-                    url: currentUrl,
-                    external: true 
-                });
-            } else {
-                window.open(`https://liff.line.me/${LIFF_ID}?redirectUri=${encodeURIComponent(currentUrl)}`, '_blank');
-            }
-        }
+        const profile = await liff.getProfile();
+        userId = profile.userId;
+        document.getElementById('userName').textContent = `ようこそ ${profile.displayName} さん`;
 
-        /**
-         * 位置情報を取得し、GASへ送信
-         * @param {string} type - 'clockIn' または 'clockOut'
-         */
-        async function sendPunchData(type) {
-            if (!userProfile) {
-                alert('ユーザー情報が取得できません。LINE連携が完了していません。');
-                return;
-            }
+      } catch (err) {
+        document.getElementById('userName').textContent = `❌ LIFFエラー: ${err.message}`;
+        console.error(err);
+      }
+    };
 
-            statusDisplay.textContent = `位置情報を取得中... (${type === 'clockIn' ? '出勤' : '退勤'})`;
-            
-            clockInButton.disabled = true;
-            clockOutButton.disabled = true;
+    // 出勤・退勤ボタン押下時の共通処理
+    async function punch(type) {
+      const statusEl = document.getElementById('status');
+      if (!userId) {
+        statusEl.textContent = 'ユーザー情報取得失敗';
+        return;
+      }
 
-            const geoOptions = {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            };
+      try {
+        statusEl.textContent = '位置情報取得中...';
+        const pos = await getCurrentPosition();
+        statusEl.textContent = '打刻送信中...';
 
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    const timestamp = new Date().toISOString();
+        await sendToGAS(userId, type, pos.coords.latitude, pos.coords.longitude);
+        statusEl.textContent = `✅ ${type === 'clockIn' ? '出勤' : '退勤'}打刻完了！`;
+      } catch (err) {
+        console.error('打刻エラー:', err);
+        statusEl.textContent = `❌ エラー: ${err.message}`;
+      }
+    }
 
-                    const data = {
-                        userId: userProfile.userId,
-                        type: type,
-                        latitude: lat,
-                        longitude: lng,
-                        timestamp: timestamp
-                    };
+    function clockIn() { punch('clockIn'); }
+    function clockOut() { punch('clockOut'); }
 
-                    try {
-                        const response = await fetch(GAS_WEB_APP_URL, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(data)
-                        });
+    // JSONP送信
+    function sendToGAS(userId, type, latitude, longitude) {
+      return new Promise((resolve, reject) => {
+        const timestamp = new Date().toISOString();
+        const callbackName = 'jsonpCallback_' + Date.now();
 
-                        if (response.ok) {
-                            statusDisplay.textContent = `${type === 'clockIn' ? '出勤' : '退勤'}打刻が完了しました！`;
-                            lastPunchInfo.innerHTML = `最終打刻: ${new Date().toLocaleString()}<br>種別: ${type === 'clockIn' ? '出勤' : '退勤'}<br>緯度: ${lat.toFixed(6)}, 経度: ${lng.toFixed(6)}`;
-                        } else {
-                            const errorText = await response.text();
-                            statusDisplay.textContent = `打刻送信失敗: ${response.status} ${errorText}`;
-                            alert(`打刻送信に失敗しました。\nエラー: ${errorText}`);
-                        }
-                    } catch (error) {
-                        console.error("Fetchエラー:", error);
-                        statusDisplay.textContent = `打刻送信中にエラーが発生しました: ${error.message}`;
-                        alert(`打刻送信中にエラーが発生しました。\n${error.message}`);
-                    } finally {
-                        clockInButton.disabled = false;
-                        clockOutButton.disabled = false;
-                    }
-                },
-                (error) => {
-                    console.error("位置情報取得エラー:", error);
-                    let errorMessage = '位置情報取得に失敗しました。';
-                    switch (error.code) {
-                        case error.PERMISSION_DENIED:
-                            errorMessage += ' 位置情報の利用が許可されていません。ブラウザの設定をご確認ください。';
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            errorMessage += ' 位置情報を取得できませんでした。';
-                            break;
-                        case error.TIMEOUT:
-                            errorMessage += ' 位置情報取得がタイムアウトしました。';
-                            break;
-                        default:
-                            errorMessage += ` エラーコード: ${error.code}`;
-                    }
-                    statusDisplay.textContent = errorMessage;
-                    alert(errorMessage);
-                    clockInButton.disabled = false;
-                    clockOutButton.disabled = false;
-                },
-                geoOptions
-            );
-        }
+        window[callbackName] = function (response) {
+          delete window[callbackName];
+          script.remove();
+          if (response?.status === 'success') {
+            resolve(response);
+          } else {
+            reject(new Error(response?.message || '不明なエラー'));
+          }
+        };
 
-        // イベントリスナー設定
-        clockInButton.addEventListener('click', () => sendPunchData('clockIn'));
-        clockOutButton.addEventListener('click', () => sendPunchData('clockOut'));
-        openInBrowserButton.addEventListener('click', openInExternalBrowser);
-        retryButton.addEventListener('click', () => window.location.reload());
-
-        // ページ読み込み時に初期化
-        window.addEventListener('load', () => {
-            // モバイル環境チェック (geolocation APIが使えるか)
-            if (!navigator.geolocation) {
-                statusDisplay.textContent = '位置情報サービスが利用できません。';
-                fallbackMessage.style.display = 'block'; // エラー表示
-                return;
-            }
-            initializeLiff();
+        const params = new URLSearchParams({
+          userId, type, latitude, longitude, timestamp,
+          callback: callbackName
         });
-    </script>
+
+        const script = document.createElement('script');
+        script.src = `${GAS_URL}?${params.toString()}`;
+        script.onerror = () => {
+          delete window[callbackName];
+          script.remove();
+          reject(new Error('スクリプト読み込み失敗'));
+        };
+
+        document.head.appendChild(script);
+      });
+    }
+
+    // GPS取得
+    function getCurrentPosition() {
+      return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        });
+      });
+    }
+  </script>
 </body>
 </html>
