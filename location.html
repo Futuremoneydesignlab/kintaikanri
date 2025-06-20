@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>店舗管理 LIFFアプリ</title>
+    <title>店舗記録 LIFFアプリ</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         body {
@@ -165,7 +165,7 @@
         .fallback-button {
             background-color: #339af0;
             margin-top: 10px;
-            display: inline-block;
+            display: inline-block; /* ボタンが横並びになるように */
             margin-right: 10px;
         }
         .retry-button {
@@ -177,20 +177,19 @@
 </head>
 <body>
     <div class="container">
-        <h1>店舗管理アプリ</h1>
+        <h1>店舗記録アプリ</h1>
         <p id="status">LIFFの初期化中...</p>
 
         <div class="tabs">
             <button class="tab-button active" data-tab="expenseRecordTab">出金記録</button>
-            <button class="tab-button" data-tab="cardApplicationTab">カード利用申請</button>
-            <button class="tab-button" data-tab="cashReplenishTab">レジ金補充記録</button>
-            <button class="tab-button" data-tab="cashBalanceTab">レジ金残高</button>
-            <button class="tab-button" data-tab="adminMenuTab">管理メニュー</button>
+            <button class="tab-button" data-tab="incomeRecordTab">入金記録</button>
+            <button class="tab-button" data-tab="accountingInputTab">会計入力</button> <button class="tab-button" data-tab="cardApplicationTab">カード利用申請</button>
+            <button class="tab-button" data-tab="cashReplenishTab">レジ金補充</button>
         </div>
 
         <div id="expenseRecordTab" class="tab-content active">
             <div class="form-section">
-                <h2>出金記録（買い出し／会計）</h2>
+                <h2>出金記録（買い出し／経費など）</h2>
                 <div class="form-group">
                     <label for="expenseAmount">金額:</label>
                     <input type="number" id="expenseAmount" placeholder="例: 1500" required>
@@ -200,8 +199,9 @@
                     <select id="expensePurpose" required>
                         <option value="">選択してください</option>
                         <option value="買い出し">買い出し</option>
-                        <option value="会計">会計</option>
-                        <option value="その他">その他</option>
+                        <option value="交通費">交通費</option>
+                        <option value="備品購入">備品購入</option>
+                        <option value="その他経費">その他経費</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -216,6 +216,58 @@
                     <button id="submitExpenseButton">記録する</button>
                 </div>
                 <p class="message-display" id="expenseMessage"></p>
+            </div>
+        </div>
+
+        <div id="incomeRecordTab" class="tab-content">
+            <div class="form-section">
+                <h2>入金記録（売上以外での入金）</h2>
+                <div class="form-group">
+                    <label for="incomeAmount">金額:</label>
+                    <input type="number" id="incomeAmount" placeholder="例: 10000" required>
+                </div>
+                <div class="form-group">
+                    <label for="incomeType">種別:</label>
+                    <select id="incomeType" required>
+                        <option value="">選択してください</option>
+                        <option value="売上以外入金">売上以外入金</option>
+                        <option value="返金入金">返金入金</option>
+                        <option value="その他入金">その他入金</option>
+                    </select>
+                </div>
+                 <div class="form-group">
+                    <label for="incomeMemo">メモ（任意）:</label>
+                    <textarea id="incomeMemo" rows="3" placeholder="詳細を記入"></textarea>
+                </div>
+                <div class="form-group">
+                    <button id="submitIncomeButton">記録する</button>
+                </div>
+                <p class="message-display" id="incomeMessage"></p>
+            </div>
+        </div>
+
+        <div id="accountingInputTab" class="tab-content"> <div class="form-section">
+                <h2>会計入力（売上とレジからの出金）</h2>
+                <div class="form-group">
+                    <label for="salesAmount">売上金額（入金）:</label>
+                    <input type="number" id="salesAmount" placeholder="例: 15000" required>
+                </div>
+                <div class="form-group">
+                    <label for="cashOutAmount">レジからの出金金額（任意）:</label>
+                    <input type="number" id="cashOutAmount" placeholder="例: 500">
+                </div>
+                <div class="form-group">
+                    <label for="cashOutPurpose">出金使途（任意、出金の場合）:</label>
+                    <input type="text" id="cashOutPurpose" placeholder="例: 交通費精算">
+                </div>
+                 <div class="form-group">
+                    <label for="accountingMemo">メモ（任意）:</label>
+                    <textarea id="accountingMemo" rows="3" placeholder="会計内容の詳細"></textarea>
+                </div>
+                <div class="form-group">
+                    <button id="submitAccountingButton">記録する</button>
+                </div>
+                <p class="message-display" id="accountingMessage"></p>
             </div>
         </div>
 
@@ -263,33 +315,7 @@
                 <p class="message-display" id="replenishMessage"></p>
             </div>
         </div>
-
-        <div id="cashBalanceTab" class="tab-content">
-            <div class="form-section">
-                <h2>レジ金残高確認</h2>
-                <p><strong>当日レジ金実数:</strong> <input type="number" id="currentCashBalance" placeholder="実数を入力"></p>
-                <p><strong>自動計算残高:</strong> <span id="calculatedCashBalance">取得中...</span></p>
-                <p><strong>差額:</strong> <span id="cashDifference">計算中...</span></p>
-                <div class="form-group">
-                    <button id="refreshCashBalance">残高を更新/確認</button>
-                </div>
-                <p class="message-display" id="cashBalanceMessage"></p>
-            </div>
-        </div>
-
-        <div id="adminMenuTab" class="tab-content">
-            <div class="form-section">
-                <h2>管理メニュー</h2>
-                <p>ここに管理者のみがアクセスできる設定や機能が入ります。</p>
-                <div class="form-group">
-                    <label for="initialCashLimit">初期レジ金上限:</label>
-                    <input type="number" id="initialCashLimit" placeholder="例: 30000">
-                    <button id="saveAdminSetting">設定を保存</button>
-                </div>
-                <p class="message-display" id="adminMessage"></p>
-            </div>
-        </div>
-
+        
         <div id="fallback-message" class="fallback-message">
             <p>LIFF機能の読み込みに失敗しました。以下の方法をお試しください:</p>
             <button id="openInBrowser" class="fallback-button">外部ブラウザで開く</button>
@@ -300,7 +326,7 @@
     <script>
         const LIFF_ID = "2007570655-EXXROdzZ"; // ★あなたのLIFF ID
         // GASウェブアプリのURLは、GASデプロイ後に取得してここに設定してください。
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzMw3yGg7-kgVPFHFcNjZpBETH_X8m5bTtHXobATgxwXOc7DHK6zHQMVo2tdcqtGN54/exec"; 
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxKF2HL5SvDA4-vIUN6JgenQDIIAe4yCuQfwQhX7u2zi0gMA2fG8Lkm79w1hSbCXwlMEw/exec"; 
 
         const statusDisplay = document.getElementById('status'); // アプリ全体のLIFFステータス
         const fallbackMessage = document.getElementById('fallback-message');
@@ -331,6 +357,7 @@
                     statusDisplay.textContent = `こんにちは、${userProfile.displayName}さん！`;
                     // LIFF初期化後に各フォームのボタンを有効化 (初期状態はdisabled)
                     document.querySelectorAll('button').forEach(btn => {
+                        // フォールバックボタン以外を有効化
                         if (btn.id !== 'openInBrowser' && btn.id !== 'retryButton') {
                             btn.disabled = false;
                         }
@@ -359,9 +386,9 @@
                 document.getElementById(tabId).classList.add('active');
 
                 // 特定のタブがアクティブになった際の処理（例: 残高取得など）
-                if (tabId === 'cashBalanceTab') {
-                    // refreshCashBalance(); // 必要であれば、タブ切り替え時に残高を自動取得
-                }
+                // if (tabId === 'cashBalanceTab') {
+                //    refreshCashBalance(); // レジ金残高表示は非表示にしたため、この呼び出しは不要
+                // }
             });
         });
 
@@ -399,9 +426,6 @@
                 userId: userProfile.userId,
                 formType: formType,
                 timestamp: new Date().toISOString(),
-                // 緯度経度が必要なフォーム（例: 出金記録）ならここで取得
-                // latitude: (await getCurrentPosition()).coords.latitude,
-                // longitude: (await getCurrentPosition()).coords.longitude,
             };
 
             messageDisplay.className = 'message-display';
@@ -473,13 +497,71 @@
                 receiptAcquired: receipt,
                 memo: memo
             };
-            await sendFormDataToGAS('expenseRecord', formData, 'expenseMessage');
-            // 成功したらフォームをリセット
-            document.getElementById('expenseAmount').value = '';
-            document.getElementById('expensePurpose').value = '';
-            document.getElementById('receiptAcquired').checked = false;
-            document.getElementById('expenseMemo').value = '';
+            const success = await sendFormDataToGAS('expenseRecord', formData, 'expenseMessage');
+            if(success) { // 成功した場合のみフォームをリセット
+                document.getElementById('expenseAmount').value = '';
+                document.getElementById('expensePurpose').value = '';
+                document.getElementById('receiptAcquired').checked = false;
+                document.getElementById('expenseMemo').value = '';
+            }
         });
+
+        // 入金記録フォーム
+        document.getElementById('submitIncomeButton').addEventListener('click', async () => {
+            const amount = document.getElementById('incomeAmount').value;
+            const type = document.getElementById('incomeType').value; // '売上以外入金' or '返金入金' or 'その他入金'
+            const memo = document.getElementById('incomeMemo').value;
+
+            if (!amount || !type) {
+                alert('金額と種別は必須です。');
+                return;
+            }
+
+            const formData = {
+                amount: amount,
+                type: type,
+                memo: memo
+            };
+            const success = await sendFormDataToGAS('incomeRecord', formData, 'incomeMessage');
+            if(success) {
+                document.getElementById('incomeAmount').value = '';
+                document.getElementById('incomeType').value = '';
+                document.getElementById('incomeMemo').value = '';
+            }
+        });
+
+        // 会計入力フォーム（売上とレジからの出金）
+        document.getElementById('submitAccountingButton').addEventListener('click', async () => {
+            const salesAmount = document.getElementById('salesAmount').value;
+            const cashOutAmount = document.getElementById('cashOutAmount').value;
+            const cashOutPurpose = document.getElementById('cashOutPurpose').value;
+            const accountingMemo = document.getElementById('accountingMemo').value;
+
+            if (!salesAmount) { // 売上金額は必須
+                alert('売上金額は必須です。');
+                return;
+            }
+            // 出金金額が入力されている場合、使途も必須にする
+            if (cashOutAmount && !cashOutPurpose) {
+                alert('レジからの出金がある場合、出金使途は必須です。');
+                return;
+            }
+
+            const formData = {
+                salesAmount: salesAmount,
+                cashOutAmount: cashOutAmount || '', // 空の場合も送信
+                cashOutPurpose: cashOutPurpose || '', // 空の場合も送信
+                accountingMemo: accountingMemo
+            };
+            const success = await sendFormDataToGAS('accountingInput', formData, 'accountingMessage');
+            if(success) {
+                document.getElementById('salesAmount').value = '';
+                document.getElementById('cashOutAmount').value = '';
+                document.getElementById('cashOutPurpose').value = '';
+                document.getElementById('accountingMemo').value = '';
+            }
+        });
+
 
         // カード利用申請フォーム
         document.getElementById('submitCardButton').addEventListener('click', async () => {
@@ -497,10 +579,12 @@
                 type: type,
                 purpose: purpose
             };
-            await sendFormDataToGAS('cardApplication', formData, 'cardMessage');
-            document.getElementById('cardAmount').value = '';
-            document.getElementById('cardType').value = '';
-            document.getElementById('cardPurpose').value = '';
+            const success = await sendFormDataToGAS('cardApplication', formData, 'cardMessage');
+            if(success) {
+                document.getElementById('cardAmount').value = '';
+                document.getElementById('cardType').value = '';
+                document.getElementById('cardPurpose').value = '';
+            }
         });
 
         // レジ金補充記録フォーム
@@ -517,73 +601,13 @@
                 amount: amount,
                 memo: memo
             };
-            await sendFormDataToGAS('cashReplenish', formData, 'replenishMessage');
-            document.getElementById('replenishAmount').value = '';
-            document.getElementById('replenishMemo').value = '';
-        });
-
-        // レジ金残高確認（GASからデータ取得の例）
-        document.getElementById('refreshCashBalance').addEventListener('click', async () => {
-            const currentBalanceInput = document.getElementById('currentCashBalance');
-            const currentBalance = currentBalanceInput.value;
-            const calculatedBalanceSpan = document.getElementById('calculatedCashBalance');
-            const differenceSpan = document.getElementById('cashDifference');
-            const messageDisplay = document.getElementById('cashBalanceMessage');
-
-            if (!currentBalance) {
-                alert('当日レジ金実数を入力してください。');
-                return;
-            }
-
-            messageDisplay.className = 'message-display';
-            messageDisplay.textContent = '残高取得中...';
-            currentBalanceInput.disabled = true; // 入力フィールドを無効化
-            calculatedBalanceSpan.textContent = '取得中...';
-            differenceSpan.textContent = '計算中...';
-
-            try {
-                // GASから残高データを取得するリクエスト（formTypeを 'getCashBalance' などとする）
-                const gasResponse = await sendFormDataToGAS('getCashBalance', { currentBalance: currentBalance }, 'cashBalanceMessage');
-                
-                if (gasResponse && gasResponse.status === 'success') {
-                    const autoCalcBalance = gasResponse.calculatedBalance || 0;
-                    calculatedBalanceSpan.textContent = autoCalcBalance.toLocaleString();
-                    const difference = currentBalance - autoCalcBalance;
-                    differenceSpan.textContent = difference.toLocaleString();
-                    differenceSpan.style.color = difference === 0 ? 'green' : 'red';
-                    
-                    messageDisplay.className = 'message-display success';
-                    messageDisplay.textContent = '残高が更新されました。';
-                } else {
-                    throw new Error(gasResponse?.message || '残高取得に失敗しました。');
-                }
-            } catch (err) {
-                console.error("残高取得エラー:", err);
-                messageDisplay.className = 'message-display error';
-                messageDisplay.textContent = `エラー: ${err.message}`;
-            } finally {
-                currentBalanceInput.disabled = false; // 入力フィールドを再有効化
+            const success = await sendFormDataToGAS('cashReplenish', formData, 'replenishMessage');
+            if(success) {
+                document.getElementById('replenishAmount').value = '';
+                document.getElementById('replenishMemo').value = '';
             }
         });
-
-        // 管理メニュー
-        document.getElementById('saveAdminSetting').addEventListener('click', async () => {
-            const initialCashLimit = document.getElementById('initialCashLimit').value;
-            const messageDisplay = document.getElementById('adminMessage');
-
-            if (!initialCashLimit) {
-                alert('初期レジ金上限を入力してください。');
-                return;
-            }
-
-            const formData = {
-                settingType: 'initialCashLimit',
-                value: initialCashLimit
-            };
-            await sendFormDataToGAS('adminSetting', formData, 'adminMessage');
-            // 必要であれば設定値を読み込み直す処理
-        });
-
+        
         // --- フォールバック/リトライボタンのイベントリスナー ---
         openInBrowserButton.addEventListener('click', openInExternalBrowser);
         retryButton.addEventListener('click', () => window.location.reload());
