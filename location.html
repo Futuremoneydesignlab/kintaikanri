@@ -44,21 +44,21 @@
             justify-content: space-around;
             border-bottom: 1px solid #ddd;
             margin-bottom: 20px;
-            overflow-x: auto; /* タブが多い場合にスクロール可能に */
-            white-space: nowrap; /* タブが折り返さないように */
+            overflow-x: auto;
+            white-space: nowrap;
         }
         .tab-button {
-            flex: 1 1 auto; /* タブが均等に広がるように */
+            flex: 1 1 auto;
             background-color: #f8f8f8;
             border: none;
-            padding: 10px 12px; /* 少しパディング調整 */
+            padding: 10px 12px;
             cursor: pointer;
-            font-size: 0.95em; /* フォントサイズ調整 */
+            font-size: 0.95em;
             color: #555;
             text-align: center;
             border-bottom: 2px solid transparent;
             transition: all 0.3s ease;
-            min-width: 80px; /* 最小幅 */
+            min-width: 80px;
         }
         .tab-button.active {
             background-color: #e0e0e0;
@@ -181,13 +181,37 @@
         <p id="status">LIFFの初期化中...</p>
 
         <div class="tabs">
-            <button class="tab-button active" data-tab="expenseRecordTab">出金記録</button>
-            <button class="tab-button" data-tab="incomeRecordTab">入金記録</button>
-            <button class="tab-button" data-tab="accountingInputTab">会計入力</button> <button class="tab-button" data-tab="cardApplicationTab">カード利用申請</button>
+            <button class="tab-button active" data-tab="accountingInputTab">現金会計入力</button> <button class="tab-button" data-tab="expenseRecordTab">出金記録</button>
             <button class="tab-button" data-tab="cashReplenishTab">レジ金補充</button>
+            <button class="tab-button" data-tab="cardApplicationTab">カード利用申請</button>
         </div>
 
-        <div id="expenseRecordTab" class="tab-content active">
+        <div id="accountingInputTab" class="tab-content active"> <div class="form-section">
+                <h2>会計入力（売上とレジからの出金）</h2>
+                <div class="form-group">
+                    <label for="salesAmount">売上金額（入金）:</label>
+                    <input type="number" id="salesAmount" placeholder="例: 15000" required>
+                </div>
+                <div class="form-group">
+                    <label for="cashOutAmount">レジからの出金金額（任意）:</label>
+                    <input type="number" id="cashOutAmount" placeholder="例: 500">
+                </div>
+                <div class="form-group">
+                    <label for="cashOutPurpose">出金使途（任意、出金の場合）:</label>
+                    <input type="text" id="cashOutPurpose" placeholder="例: 交通費精算">
+                </div>
+                 <div class="form-group">
+                    <label for="accountingMemo">メモ（任意）:</label>
+                    <textarea id="accountingMemo" rows="3" placeholder="会計内容の詳細"></textarea>
+                </div>
+                <div class="form-group">
+                    <button id="submitAccountingButton">記録する</button>
+                </div>
+                <p class="message-display" id="accountingMessage"></p>
+            </div>
+        </div>
+
+        <div id="expenseRecordTab" class="tab-content">
             <div class="form-section">
                 <h2>出金記録（買い出し／経費など）</h2>
                 <div class="form-group">
@@ -219,58 +243,24 @@
             </div>
         </div>
 
-        <div id="incomeRecordTab" class="tab-content">
+        <div id="cashReplenishTab" class="tab-content">
             <div class="form-section">
-                <h2>入金記録（売上以外での入金）</h2>
+                <h2>レジ金補充記録</h2>
                 <div class="form-group">
-                    <label for="incomeAmount">金額:</label>
-                    <input type="number" id="incomeAmount" placeholder="例: 10000" required>
-                </div>
-                <div class="form-group">
-                    <label for="incomeType">種別:</label>
-                    <select id="incomeType" required>
-                        <option value="">選択してください</option>
-                        <option value="売上以外入金">売上以外入金</option>
-                        <option value="返金入金">返金入金</option>
-                        <option value="その他入金">その他入金</option>
-                    </select>
-                </div>
-                 <div class="form-group">
-                    <label for="incomeMemo">メモ（任意）:</label>
-                    <textarea id="incomeMemo" rows="3" placeholder="詳細を記入"></textarea>
+                    <label for="replenishAmount">補充金額:</label>
+                    <input type="number" id="replenishAmount" placeholder="例: 10000" required>
                 </div>
                 <div class="form-group">
-                    <button id="submitIncomeButton">記録する</button>
+                    <label for="replenishMemo">メモ（任意）:</label>
+                    <textarea id="replenishMemo" rows="3" placeholder="詳細を記入"></textarea>
                 </div>
-                <p class="message-display" id="incomeMessage"></p>
+                <div class="form-group">
+                    <button id="submitReplenishButton">記録する</button>
+                </div>
+                <p class="message-display" id="replenishMessage"></p>
             </div>
         </div>
-
-        <div id="accountingInputTab" class="tab-content"> <div class="form-section">
-                <h2>会計入力（売上とレジからの出金）</h2>
-                <div class="form-group">
-                    <label for="salesAmount">売上金額（入金）:</label>
-                    <input type="number" id="salesAmount" placeholder="例: 15000" required>
-                </div>
-                <div class="form-group">
-                    <label for="cashOutAmount">レジからの出金金額（任意）:</label>
-                    <input type="number" id="cashOutAmount" placeholder="例: 500">
-                </div>
-                <div class="form-group">
-                    <label for="cashOutPurpose">出金使途（任意、出金の場合）:</label>
-                    <input type="text" id="cashOutPurpose" placeholder="例: 交通費精算">
-                </div>
-                 <div class="form-group">
-                    <label for="accountingMemo">メモ（任意）:</label>
-                    <textarea id="accountingMemo" rows="3" placeholder="会計内容の詳細"></textarea>
-                </div>
-                <div class="form-group">
-                    <button id="submitAccountingButton">記録する</button>
-                </div>
-                <p class="message-display" id="accountingMessage"></p>
-            </div>
-        </div>
-
+        
         <div id="cardApplicationTab" class="tab-content">
             <div class="form-section">
                 <h2>カード利用申請</h2>
@@ -297,24 +287,6 @@
                 <p class="message-display" id="cardMessage"></p>
             </div>
         </div>
-
-        <div id="cashReplenishTab" class="tab-content">
-            <div class="form-section">
-                <h2>レジ金補充記録</h2>
-                <div class="form-group">
-                    <label for="replenishAmount">補充金額:</label>
-                    <input type="number" id="replenishAmount" placeholder="例: 10000" required>
-                </div>
-                <div class="form-group">
-                    <label for="replenishMemo">メモ（任意）:</label>
-                    <textarea id="replenishMemo" rows="3" placeholder="詳細を記入"></textarea>
-                </div>
-                <div class="form-group">
-                    <button id="submitReplenishButton">記録する</button>
-                </div>
-                <p class="message-display" id="replenishMessage"></p>
-            </div>
-        </div>
         
         <div id="fallback-message" class="fallback-message">
             <p>LIFF機能の読み込みに失敗しました。以下の方法をお試しください:</p>
@@ -326,7 +298,7 @@
     <script>
         const LIFF_ID = "2007570655-EXXROdzZ"; // ★あなたのLIFF ID
         // GASウェブアプリのURLは、GASデプロイ後に取得してここに設定してください。
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx_yN5v1lXkwnqzoyqsjRkOt1RyKZ5TfScFjblMvYxVLahMLGGO2Vco9FiCUWphCegZ/exec"; 
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxKF2HL5SvDA4-vIUN6JgenQDIIAe4yCuQfwQhX7u2zi0gMA2fG8Lkm79w1hSbCXwlMEw/exec"; 
 
         const statusDisplay = document.getElementById('status'); // アプリ全体のLIFFステータス
         const fallbackMessage = document.getElementById('fallback-message');
@@ -384,11 +356,6 @@
                 // 全てのタブコンテンツを非表示にし、対応するコンテンツを表示
                 document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
                 document.getElementById(tabId).classList.add('active');
-
-                // 特定のタブがアクティブになった際の処理（例: 残高取得など）
-                // if (tabId === 'cashBalanceTab') {
-                //    refreshCashBalance(); // レジ金残高表示は非表示にしたため、この呼び出しは不要
-                // }
             });
         });
 
@@ -506,29 +473,10 @@
             }
         });
 
-        // 入金記録フォーム
-        document.getElementById('submitIncomeButton').addEventListener('click', async () => {
-            const amount = document.getElementById('incomeAmount').value;
-            const type = document.getElementById('incomeType').value; // '売上以外入金' or '返金入金' or 'その他入金'
-            const memo = document.getElementById('incomeMemo').value;
-
-            if (!amount || !type) {
-                alert('金額と種別は必須です。');
-                return;
-            }
-
-            const formData = {
-                amount: amount,
-                type: type,
-                memo: memo
-            };
-            const success = await sendFormDataToGAS('incomeRecord', formData, 'incomeMessage');
-            if(success) {
-                document.getElementById('incomeAmount').value = '';
-                document.getElementById('incomeType').value = '';
-                document.getElementById('incomeMemo').value = '';
-            }
-        });
+        // 入金記録フォーム（このタブは削除されたので、関連するJSも削除）
+        // document.getElementById('submitIncomeButton').addEventListener('click', async () => {
+        //     // ... 処理 ...
+        // });
 
         // 会計入力フォーム（売上とレジからの出金）
         document.getElementById('submitAccountingButton').addEventListener('click', async () => {
