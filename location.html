@@ -44,21 +44,21 @@
             justify-content: space-around;
             border-bottom: 1px solid #ddd;
             margin-bottom: 20px;
-            overflow-x: auto;
-            white-space: nowrap;
+            overflow-x: auto; /* タブが多い場合にスクロール可能に */
+            white-space: nowrap; /* タブが折り返さないように */
         }
         .tab-button {
-            flex: 1 1 auto;
+            flex: 1 1 auto; /* タブが均等に広がるように */
             background-color: #f8f8f8;
             border: none;
-            padding: 10px 12px;
+            padding: 10px 12px; /* 少しパディング調整 */
             cursor: pointer;
-            font-size: 0.95em;
+            font-size: 0.95em; /* フォントサイズ調整 */
             color: #555;
             text-align: center;
             border-bottom: 2px solid transparent;
             transition: all 0.3s ease;
-            min-width: 80px;
+            min-width: 80px; /* 最小幅 */
         }
         .tab-button.active {
             background-color: #e0e0e0;
@@ -181,8 +181,7 @@
         <p id="status">LIFFの初期化中...</p>
 
         <div class="tabs">
-            <button class="tab-button active" data-tab="accountingInputTab">現金会計入力</button>
-            <button class="tab-button" data-tab="expenseRecordTab">出金記録</button>
+            <button class="tab-button active" data-tab="accountingInputTab">現金会計入力</button> <button class="tab-button" data-tab="expenseRecordTab">出金記録</button>
             <button class="tab-button" data-tab="cashReplenishTab">レジ金補充</button>
             <button class="tab-button" data-tab="cardApplicationTab">カード利用申請</button>
         </div>
@@ -240,7 +239,7 @@
                 <p class="message-display" id="expenseMessage"></p>
             </div>
         </div>
-        
+
         <div id="cashReplenishTab" class="tab-content">
             <div class="form-section">
                 <h2>レジ金補充記録</h2>
@@ -296,7 +295,7 @@
     <script>
         const LIFF_ID = "2007570655-EXXROdzZ"; // ★あなたのLIFF ID
         // GASウェブアプリのURLは、GASデプロイ後に取得してここに設定してください。
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxNY83z9YsL4mcSk936WXM2YoXC5LthFISRByZqjzHIe-Lbui4-XX8Nqcp2QEdHcoOW/exec"; 
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbylah7Dc-ZgqiciOSp9R4okkR4Ppqxf1ydNNAuUisLOZagrFp0srEp_2gsjkYFB8_dQ/exec"; 
 
         const statusDisplay = document.getElementById('status'); // アプリ全体のLIFFステータス
         const fallbackMessage = document.getElementById('fallback-message');
@@ -475,7 +474,6 @@
         document.getElementById('submitAccountingButton').addEventListener('click', async () => {
             const salesAmount = document.getElementById('salesAmount').value;
             const cashOutAmount = document.getElementById('cashOutAmount').value;
-            // ★ここを削除★ cashOutPurpose の取得
             const accountingMemo = document.getElementById('accountingMemo').value;
 
             if (!salesAmount) { // 売上金額は必須
@@ -483,15 +481,14 @@
                 return;
             }
             // 出金金額が入力されている場合、使途は「おつり」に固定のためチェック不要
-            // if (cashOutAmount && !cashOutPurpose) {
-            //     alert('レジからの出金がある場合、出金使途は必須です。');
-            //     return;
-            // }
+            if (cashOutAmount && parseFloat(cashOutAmount) < 0) { // 金額が負の値でないかチェック
+                alert('出金金額は0以上の値を入力してください。');
+                return;
+            }
 
             const formData = {
                 salesAmount: salesAmount,
                 cashOutAmount: cashOutAmount || '', // 空の場合も送信
-                // ★ここを削除★ cashOutPurpose の送信
                 accountingMemo: accountingMemo
             };
             const success = await sendFormDataToGAS('accountingInput', formData, 'accountingMessage');
