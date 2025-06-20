@@ -181,7 +181,8 @@
         <p id="status">LIFFの初期化中...</p>
 
         <div class="tabs">
-            <button class="tab-button active" data-tab="accountingInputTab">現金会計入力</button> <button class="tab-button" data-tab="expenseRecordTab">出金記録</button>
+            <button class="tab-button active" data-tab="accountingInputTab">現金会計入力</button>
+            <button class="tab-button" data-tab="expenseRecordTab">出金記録</button>
             <button class="tab-button" data-tab="cashReplenishTab">レジ金補充</button>
             <button class="tab-button" data-tab="cardApplicationTab">カード利用申請</button>
         </div>
@@ -295,7 +296,7 @@
     <script>
         const LIFF_ID = "2007570655-EXXROdzZ"; // ★あなたのLIFF ID
         // GASウェブアプリのURLは、GASデプロイ後に取得してここに設定してください。
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbylah7Dc-ZgqiciOSp9R4okkR4Ppqxf1ydNNAuUisLOZagrFp0srEp_2gsjkYFB8_dQ/exec"; 
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxKF2HL5SvDA4-vIUN6JgenQDIIAe4yCuQfwQhX7u2zi0gMA2fG8Lkm79w1hSbCXwlMEw/exec"; 
 
         const statusDisplay = document.getElementById('status'); // アプリ全体のLIFFステータス
         const fallbackMessage = document.getElementById('fallback-message');
@@ -480,7 +481,6 @@
                 alert('売上金額は必須です。');
                 return;
             }
-            // 出金金額が入力されている場合、使途は「おつり」に固定のためチェック不要
             if (cashOutAmount && parseFloat(cashOutAmount) < 0) { // 金額が負の値でないかチェック
                 alert('出金金額は0以上の値を入力してください。');
                 return;
